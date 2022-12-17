@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate, login
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
 
@@ -7,37 +8,20 @@ from store.views import UserCreateView
 
 class UserCreateViewTestCase(TestCase):
 
-    def test_page_correct_template(self):
-        response = self.client.get(reverse('register'))
-        self.assertTemplateUsed(response, 'registration/registration.html')
-
-    def test_page_incorrect_template(self):
-        response = self.client.get(reverse('register'))
-        self.assertTemplateNotUsed(response, 'registration/login.html')
+    def setUp(self):
+        self.form_data = {
+            'username': 'simple',
+            'password': 'simple-password'
+        }
+        MyUser.objects.create_user(username=self.form_data.get('username'),
+                                   password=self.form_data.get('password'))
 
     def test_form_valid_is_makes_login(self):
-        user = MyUser.objects.create_user(username='test',
-                                          password='example-password')
+        username = self.form_data.get('username')
+        password = self.form_data.get('password')
+        user = authenticate(username=username,
+                            password=password)
         self.assertTrue(user.is_authenticated)
-
-
-class ProductListViewTestCase(TestCase):
-
-    def test_page_correct_template(self):
-        response = self.client.get(reverse('home'))
-        self.assertTemplateUsed(response, 'store/home.html')
-
-    def test_page_incorrect_template(self):
-        response = self.client.get(reverse('home'))
-        self.assertTemplateNotUsed(response, 'store/purchase.html')
-
-
-class ProductCreateViewTestCase(TestCase):
-    pass
-
-
-class ProductUpdateViewTestCase(TestCase):
-    pass
 
 
 class PurchaseListViewTestCase(TestCase):
@@ -53,10 +37,6 @@ class ReturnListViewTestCase(TestCase):
 
 
 class ReturnCreateViewTestCase(TestCase):
-    pass
-
-
-class ReturnDeleteViewTestCase(TestCase):
     pass
 
 
