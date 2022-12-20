@@ -13,22 +13,29 @@ from store.views import UserCreateView
 
 class UserCreateViewTestCase(TestCase):
 
-    def test_form_valid(self):
-        form = UserCreateForm(data={'username': 'simple',
-                                    'email': 'simplecustomer@gmail.com',
-                                    'password1': 'simplepassword',
-                                    'password2': 'simplepassword',
-                                    'deposit': 2000})
-        self.assertTrue(form.is_valid())
-        request = RequestFactory().post(reverse('register'))
-        request.session = SessionStore()
-        request.user = AnonymousUser()
-        print(request.user)
-        view = UserCreateView()
-        view.setup(request)
-        view.form_valid(form)
-        print(request.user)
-        self.assertTrue(request.user.is_authenticated)
+    def setUp(self):
+        self.form = UserCreateForm(data={'username': 'simple',
+                                         'email': 'simplecustomer@gmail.com',
+                                         'password1': 'simplepassword',
+                                         'password2': 'simplepassword',
+                                         'deposit': 2000})
+        self.request = RequestFactory().post(reverse('register'))
+        self.view = UserCreateView()
+
+    def test_form_valid_create_user(self):
+        self.request.session = SessionStore()
+        self.request.user = AnonymousUser()
+        self.view.setup(self.request)
+        self.view.form_valid(self.form)
+        user = MyUser.objects.get(email='simplecustomer@gmail.com')
+        self.assertEqual(user.username, 'simple')
+
+    def test_form_valid_authenticate_user(self):
+        self.request.session = SessionStore()
+        self.request.user = AnonymousUser()
+        self.view.setup(self.request)
+        self.view.form_valid(self.form)
+        self.assertTrue(self.request.user.is_authenticated)
 
 
 class PurchaseListViewTestCase(TestCase):
@@ -49,4 +56,3 @@ class ReturnCreateViewTestCase(TestCase):
 
 class PurchaseDeleteViewTestCase(TestCase):
     pass
-
